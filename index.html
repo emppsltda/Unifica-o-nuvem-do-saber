@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Logístico - Nuvem do Saber</title>
+    <!-- Bibliotecas Necessárias -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .drop-zone.active { border-color: #2563eb; background-color: #eff6ff; }
+        .custom-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
+        #barcodeCanvas { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+    <!-- Menu Lateral Institucional -->
+    <aside class="w-72 bg-slate-900 text-slate-300 hidden lg:flex flex-col border-r border-slate-800">
+        <div class="p-8">
+            <div class="flex items-center gap-3 text-white mb-12">
+                <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-900/20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <div>
+                    <span class="font-bold text-xl block leading-none tracking-tight">Nuvem Saber</span>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold mt-1 block">Expedição Pró</span>
+                </div>
+            </div>
+            
+            <nav class="space-y-1">
+                <a href="#" class="flex items-center gap-3 px-5 py-4 rounded-xl text-white bg-white/5 border border-white/10 transition-all">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+                    Unificador NFe
+                </a>
+                <div class="px-5 py-8">
+                    <h3 class="text-slate-600 text-[10px] font-bold uppercase tracking-widest mb-4">Configuração Atual</h3>
+                    <div class="space-y-4 text-xs text-slate-500 leading-relaxed">
+                        <p>- Extração: 44 dígitos (Pág 2)</p>
+                        <p>- Código: Padrão Code 128</p>
+                        <p>- Layout: Retângulo Integrado</p>
+                        <p>- Papel: Térmico 100x150mm</p>
+                        <p>- Processamento: 100% Local</p>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="mt-auto p-8 bg-slate-950/50">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">Sistema Operacional</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Área Principal de Trabalho -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shrink-0">
+            <h2 class="text-slate-800 font-bold text-lg">Unificador Logístico Nuvem do Saber</h2>
+            <div class="flex items-center gap-6">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-slate-700">Expedição Santos</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Meli & Shopee Pattern</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-blue-600">NS</div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center justify-center">
+            <div class="max-w-4xl w-full">
+                
+                <div class="bg-white rounded-[3rem] p-12 border border-slate-100 custom-shadow">
+                    <div id="dropZone" class="border-2 border-dashed border-slate-200 rounded-[2.5rem] p-20 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all group">
+                        <div class="w-24 h-24 bg-blue-50 text-blue-600 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-800 mb-3 text-center uppercase tracking-tight">Carregar Etiqueta</h3>
+                        <p class="text-slate-400 text-center max-w-sm leading-relaxed text-sm">O código de barras da NFe será embutido no retângulo inferior da etiqueta térmica.</p>
+                        <input type="file" id="fileInput" class="hidden" accept="application/pdf">
+                    </div>
+
+                    <div id="statusArea" class="hidden mt-10">
+                        <div class="bg-slate-50 rounded-[2rem] p-8 flex flex-col sm:flex-row items-center justify-between border border-slate-200 gap-6">
+                            <div class="flex items-center gap-5 w-full sm:w-auto">
+                                <div class="bg-slate-900 p-4 rounded-2xl text-white shadow-lg">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A1 1 0 0111.293 2.707l3 3a1 1 0 01.293.707V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path></svg>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <p id="fileName" class="text-lg font-bold text-slate-800 truncate"></p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <div id="ledStatus" class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                        <p id="chaveStatus" class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.15em]">Pronto para Unificar</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="processBtn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-14 rounded-2xl text-xs tracking-[0.2em] transition-all shadow-xl shadow-blue-200 active:scale-95 uppercase">
+                                Processar e Baixar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="mt-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-t border-slate-200 pt-8">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">© 2026 Nuvem do Saber - Otimização de Expedição</p>
+                    <div class="flex gap-6">
+                        <span class="text-slate-300 text-[10px] font-bold uppercase tracking-widest">Layout 100x150</span>
+                        <span class="text-slate-300 text-[10px] font-bold uppercase tracking-widest">Chave Auto-Extração</span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </main>
+
+    <!-- Canvas para geração do Código de Barras -->
+    <canvas id="barcodeCanvas"></canvas>
+
+    <script>
+        // Configura o worker do PDF.js para processar o texto
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const { PDFDocument, rgb, StandardFonts } = PDFLib;
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const processBtn = document.getElementById('processBtn');
+        const statusArea = document.getElementById('statusArea');
+        const fileNameSpan = document.getElementById('fileName');
+        const chaveStatus = document.getElementById('chaveStatus');
+        const ledStatus = document.getElementById('ledStatus');
+        const barcodeCanvas = document.getElementById('barcodeCanvas');
+
+        let selectedFile = null;
+
+        // Dimensões Padrão Etiqueta Térmica 100x150mm em pontos (72 dpi)
+        const PAGE_W = 283.46;
+        const PAGE_H = 425.20;
+
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('active'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('active');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        };
+
+        fileInput.onchange = (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        };
+
+        function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                alert('Erro: Utilize apenas arquivos PDF.');
+                return;
+            }
+            selectedFile = file;
+            fileNameSpan.innerText = file.name;
+            statusArea.classList.remove('hidden');
+            chaveStatus.innerText = "PDF carregado com sucesso";
+            ledStatus.className = "w-2 h-2 bg-blue-500 rounded-full animate-pulse";
+        }
+
+        // Extrai a chave de 44 dígitos da página 2
+        async function extractKey(buffer) {
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+            if (pdf.numPages < 2) return null;
+            const page = await pdf.getPage(2);
+            const textContent = await page.getTextContent();
+            const text = textContent.items.map(i => i.str).join(' ');
+            const match = text.match(/\d{44}/);
+            return match ? match[0] : null;
+        }
+
+        // Gera a imagem do código de barras
+        function getBarcodeImg(key) {
+            return new Promise((resolve) => {
+                JsBarcode(barcodeCanvas, key, {
+                    format: "CODE128",
+                    width: 3,
+                    height: 60,
+                    displayValue: false,
+                    margin: 0
+                });
+                resolve(barcodeCanvas.toDataURL("image/png"));
+            });
+        }
+
+        processBtn.onclick = async () => {
+            try {
+                processBtn.disabled = true;
+                processBtn.innerText = 'PROCESSANDO...';
+                
+                // Buffers independentes para evitar erro de desanexação
+                const bufferRead = await selectedFile.arrayBuffer();
+                const bufferWrite = await selectedFile.arrayBuffer();
+
+                const key = await extractKey(bufferRead);
+                
+                if (!key) {
+                    const ok = window.confirm("Aviso: Chave de acesso não encontrada na página 2. Prosseguir unificação básica?");
+                    if (!ok) { resetUI(); return; }
+                }
+
+                const srcDoc = await PDFDocument.load(bufferWrite);
+                const pdfFinal = await PDFDocument.create();
+                const page = pdfFinal.addPage([PAGE_W, PAGE_H]);
+                
+                const fBold = await pdfFinal.embedFont(StandardFonts.HelveticaBold);
+                const fReg = await pdfFinal.embedFont(StandardFonts.Helvetica);
+
+                const [labelPg] = await pdfFinal.embedPages([srcDoc.getPages()[0]]);
+
+                // Área do rodapé (Retângulo da DANFE) - Aumentada
+                const footerH = 100; 
+                const margin = 10;
+
+                // Desenha Etiqueta Original no Topo
+                const scale = Math.min(PAGE_W / labelPg.width, (PAGE_H - footerH - 10) / labelPg.height);
+                const lW = labelPg.width * scale;
+                const lH = labelPg.height * scale;
+
+                page.drawPage(labelPg, {
+                    width: lW, height: lH,
+                    x: (PAGE_W - lW) / 2,
+                    y: PAGE_H - lH - 5
+                });
+
+                // Desenha o Retângulo da DANFE (Borda)
+                const rectW = PAGE_W - (margin * 2);
+                const rectH = footerH - margin;
+                const rectY = margin;
+
+                page.drawRectangle({
+                    x: margin,
+                    y: rectY,
+                    width: rectW,
+                    height: rectH,
+                    borderWidth: 0.8,
+                    borderColor: rgb(0, 0, 0),
+                    color: rgb(1, 1, 1), // Fundo branco
+                    opacity: 0, // Fundo transparente (apenas borda)
+                    borderOpacity: 1
+                });
+
+                // Título dentro do retângulo
+                page.drawText('DANFE SIMPLIFICADO - CHAVE DE ACESSO', {
+                    x: margin + 8,
+                    y: rectY + rectH - 15,
+                    size: 7,
+                    font: fBold
+                });
+
+                if (key) {
+                    // Gera e insere o Código de Barras centralizado no retângulo
+                    const barcodeB64 = await getBarcodeImg(key);
+                    const barcodeImg = await pdfFinal.embedPng(barcodeB64);
+                    
+                    const bW = rectW - 40;
+                    const bH = 35;
+
+                    page.drawImage(barcodeImg, {
+                        x: margin + (rectW - bW) / 2,
+                        y: rectY + 25,
+                        width: bW,
+                        height: bH
+                    });
+
+                    // Chave formatada no rodapé do retângulo
+                    const keyFmt = key.replace(/(\d{4})/g, '$1 ').trim();
+                    page.drawText(keyFmt, {
+                        x: margin + (rectW - fReg.widthOfTextAtSize(keyFmt, 7)) / 2,
+                        y: rectY + 10,
+                        size: 7,
+                        font: fReg
+                    });
+                } else {
+                    page.drawText('CHAVE NÃO LOCALIZADA NO PDF ORIGINAL', {
+                        x: margin + 8, y: rectY + rectH / 2, size: 7, font: fReg, color: rgb(0.5, 0.5, 0.5)
+                    });
+                }
+
+                // Download
+                const bytes = await pdfFinal.save();
+                const blob = new Blob([bytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Unificado_NS_${Date.now()}.pdf`;
+                link.click();
+
+                chaveStatus.innerText = "Processo finalizado!";
+                ledStatus.className = "w-2 h-2 bg-emerald-500 rounded-full";
+                processBtn.innerText = 'CONCLUÍDO';
+                setTimeout(resetUI, 2000);
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro: ' + err.message);
+                resetUI();
+            }
+        };
+
+        function resetUI() {
+            processBtn.disabled = false;
+            processBtn.innerText = 'Processar e Baixar';
+            chaveStatus.innerText = "Aguardando novo ficheiro";
+            ledStatus.className = "w-2 h-2 bg-blue-500 rounded-full animate-pulse";
+        }
+    </script>
+</body>
+</html>
